@@ -50,6 +50,18 @@
         <label>UBICACIÓN<select id="location-filter"><option value="">Todas</option></select></label>
         <label>SEGUIMIENTO<select id="tracking-filter"><option value="">Todos</option><option value="INDIVIDUAL">Individual</option><option value="QUANTITY">Por cantidad</option></select></label>
       </div>
+      <details class="advanced-filters">
+        <summary>FILTROS AVANZADOS Y ORDENAMIENTO</summary>
+        <div class="advanced-grid">
+          <label>TIPO DE OBJETO<select id="type-filter"><option value="">Todos</option></select></label>
+          <label>CONDICIÓN FÍSICA<select id="condition-filter"><option value="">Todas</option></select></label>
+          <label>ESTADO OPERATIVO<select id="operational-filter"><option value="">Todos</option></select></label>
+          <label>DISPONIBILIDAD<select id="availability-filter"><option value="">Todas</option></select></label>
+          <label>ORDENAR POR<select id="sort-filter"><option value="name">Nombre (A–Z)</option><option value="code">Código</option><option value="category">Categoría</option><option value="location">Ubicación</option><option value="quantity_desc">Cantidad (mayor a menor)</option></select></label>
+        </div>
+        <button id="clear-filters" class="button secondary" type="button">LIMPIAR FILTROS</button>
+      </details>
+      <div class="filter-summary" id="filter-summary">SIN FILTROS ADICIONALES</div>
       <div class="list-heading"><span>REGISTROS</span><span>SELECCIONÁ PARA VER DETALLES</span></div>
       <div id="records-list" class="records-list"><div class="empty-state">Importá un archivo JSON exportado desde la computadora.</div></div>
     </section>

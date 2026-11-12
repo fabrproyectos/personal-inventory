@@ -67,11 +67,20 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-function setOptions(select, values, labelFor) {
+function setOptions(select, values, labelFor, emptyLabel = 'Todas') {
   const current = select.value;
-  select.replaceChildren(new Option('Todas', ''));
-  values.forEach((value) => select.add(new Option(labelFor(value), value)));
+  select.replaceChildren(new Option(emptyLabel, ''));
+  values.forEach((value) => select.add(new Option(labelFor(value), String(value))));
   if ([...select.options].some((option) => option.value === current)) select.value = current;
+}
+
+function uniqueSorted(values) {
+  return [...new Set(values.filter((value) => value !== null && value !== undefined && String(value).trim() !== '').map(String))]
+    .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base', numeric: true }));
+}
+
+function normalized(value) {
+  return String(value ?? '').trim().toLocaleLowerCase('es');
 }
 
 function initializeView() {
@@ -83,29 +92,71 @@ function initializeView() {
   $('local-import-status').textContent = formatDate(inventory.imported_at);
   $('record-status').textContent = `${inventory.records.length} REGISTROS`;
   $('last-updated').textContent = `IMPORTADO: ${formatDate(inventory.imported_at).toUpperCase()}`;
-  const categories = [...new Set(inventory.records.map((r) => r.category_name).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-  const locations = [...new Set(inventory.records.map((r) => r.location_path || r.location_name).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-  setOptions($('category-filter'), categories, (v) => v);
-  setOptions($('location-filter'), locations, (v) => v);
+  const records = inventory.records;
+  setOptions($('category-filter'), uniqueSorted(records.map((r) => r.category_name)), (v) => v, 'Todas');
+  setOptions($('location-filter'), uniqueSorted(records.map((r) => r.location_path || r.location_name)), (v) => v, 'Todas');
+  setOptions($('type-filter'), uniqueSorted(records.map((r) => r.item_type_name)), (v) => v, 'Todos');
+  setOptions($('condition-filter'), uniqueSorted(records.map((r) => r.physical_condition)), (v) => v, 'Todas');
+  setOptions($('operational-filter'), uniqueSorted(records.map((r) => r.operational_status)), (v) => v, 'Todos');
+  setOptions($('availability-filter'), uniqueSorted(records.map((r) => r.availability_status)), (v) => v, 'Todas');
   renderRecords();
 }
 
 function filteredRecords() {
-  const query = $('search-input').value.trim().toLocaleLowerCase('es');
-  const category = $('category-filter').value;
-  const location = $('location-filter').value;
-  const tracking = $('tracking-filter').value;
-  return inventory.records.filter((record) => {
-    if (category && record.category_name !== category) return false;
-    if (location && (record.location_path || record.location_name) !== location) return false;
-    if (tracking && record.tracking_mode !== tracking) return false;
+  const query = normalized($('search-input').value);
+  const filters = {
+    category: $('category-filter').value,
+    location: $('location-filter').value,
+    tracking: $('tracking-filter').value,
+    type: $('type-filter').value,
+    condition: $('condition-filter').value,
+    operational: $('operational-filter').value,
+    availability: $('availability-filter').value,
+  };
+  const records = inventory.records.filter((record) => {
+    if (filters.category && record.category_name !== filters.category) return false;
+    if (filters.location && (record.location_path || record.location_name) !== filters.location) return false;
+    if (filters.tracking && record.tracking_mode !== filters.tracking) return false;
+    if (filters.type && record.item_type_name !== filters.type) return false;
+    if (filters.condition && String(record.physical_condition ?? '') !== filters.condition) return false;
+    if (filters.operational && String(record.operational_status ?? '') !== filters.operational) return false;
+    if (filters.availability && String(record.availability_status ?? '') !== filters.availability) return false;
     if (query) {
       const haystack = [record.code, record.name, record.item_type_name, record.category_name,
-        record.location_name, record.location_path, record.description].join(' ').toLocaleLowerCase('es');
-      if (!haystack.includes(query)) return false;
+        record.location_name, record.location_path, record.description, record.physical_condition,
+        record.operational_status, record.availability_status].join(' ');
+      if (!normalized(haystack).includes(query)) return false;
     }
     return true;
-  }).sort((a,b) => a.name.localeCompare(b.name, 'es'));
+  });
+
+  const sort = $('sort-filter').value;
+  const compareText = (a, b) => String(a ?? '').localeCompare(String(b ?? ''), 'es', { sensitivity: 'base', numeric: true });
+  records.sort((a, b) => {
+    if (sort === 'code') return compareText(a.code, b.code);
+    if (sort === 'category') return compareText(a.category_name, b.category_name) || compareText(a.name, b.name);
+    if (sort === 'location') return compareText(a.location_path || a.location_name, b.location_path || b.location_name) || compareText(a.name, b.name);
+    if (sort === 'quantity_desc') return (Number(b.quantity) || 0) - (Number(a.quantity) || 0) || compareText(a.name, b.name);
+    return compareText(a.name, b.name);
+  });
+  return records;
+}
+
+function updateFilterSummary() {
+  const ids = ['category-filter', 'location-filter', 'tracking-filter', 'type-filter', 'condition-filter', 'operational-filter', 'availability-filter'];
+  const active = ids.filter((id) => $(id).value).length;
+  const queryActive = Boolean($('search-input').value.trim());
+  const parts = [];
+  if (queryActive) parts.push('BÚSQUEDA');
+  if (active) parts.push(`${active} FILTRO${active === 1 ? '' : 'S'}`);
+  $('filter-summary').textContent = parts.length ? `ACTIVOS: ${parts.join(' + ')}` : 'SIN FILTROS ADICIONALES';
+}
+
+function clearFilters() {
+  ['search-input', 'category-filter', 'location-filter', 'type-filter', 'condition-filter', 'operational-filter', 'availability-filter'].forEach((id) => { $(id).value = ''; });
+  $('tracking-filter').value = '';
+  $('sort-filter').value = 'name';
+  renderRecords();
 }
 
 function renderRecords() {
@@ -113,7 +164,8 @@ function renderRecords() {
   container.replaceChildren();
   if (!inventory) return;
   const records = filteredRecords();
-  $('result-count').textContent = `${records.length} RESULTADOS`;
+  $('result-count').textContent = `${records.length} / ${inventory.records.length} RESULTADOS`;
+  updateFilterSummary();
   if (!records.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
@@ -191,9 +243,11 @@ async function start() {
     $('import-error').hidden = false;
   }
   $('json-file').addEventListener('change', (event) => importFile(event.target.files[0]));
-  ['search-input', 'category-filter', 'location-filter', 'tracking-filter'].forEach((id) => {
+  ['search-input', 'category-filter', 'location-filter', 'tracking-filter', 'type-filter',
+    'condition-filter', 'operational-filter', 'availability-filter', 'sort-filter'].forEach((id) => {
     $(id).addEventListener(id === 'search-input' ? 'input' : 'change', renderRecords);
   });
+  $('clear-filters').addEventListener('click', clearFilters);
   $('close-dialog').addEventListener('click', () => $('detail-dialog').close());
   $('detail-dialog').addEventListener('click', (event) => {
     if (event.target === $('detail-dialog')) $('detail-dialog').close();
