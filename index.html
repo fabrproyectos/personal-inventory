@@ -26,7 +26,12 @@
       <div class="import-row">
         <label class="button primary" for="json-file">IMPORTAR ACTUALIZACIÓN</label>
         <input id="json-file" type="file" accept=".json,application/json" hidden>
-        <span id="import-status" class="small muted">Sin datos importados</span>
+      </div>
+      <div class="data-status" aria-live="polite">
+        <div><span>ESTADO DE LA COPIA</span><strong id="import-status">SIN DATOS IMPORTADOS</strong></div>
+        <div><span>EXPORTADO DESDE PC</span><strong id="export-status">—</strong></div>
+        <div><span>IMPORTADO EN ESTE TELÉFONO</span><strong id="local-import-status">—</strong></div>
+        <div><span>REGISTROS DISPONIBLES</span><strong id="record-status">—</strong></div>
       </div>
       <div id="import-error" class="notice error" role="alert" hidden></div>
     </section>

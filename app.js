@@ -78,8 +78,11 @@ function initializeView() {
   $('metric-records').textContent = inventory.records.length;
   $('metric-categories').textContent = inventory.categories.length;
   $('metric-locations').textContent = inventory.locations.length;
-  $('import-status').textContent = `Última importación: ${formatDate(inventory.imported_at || inventory.exported_at)}`;
-  $('last-updated').textContent = `IMPORTADO: ${formatDate(inventory.imported_at || inventory.exported_at).toUpperCase()}`;
+  $('import-status').textContent = 'COPIA LOCAL DISPONIBLE';
+  $('export-status').textContent = formatDate(inventory.exported_at);
+  $('local-import-status').textContent = formatDate(inventory.imported_at);
+  $('record-status').textContent = `${inventory.records.length} REGISTROS`;
+  $('last-updated').textContent = `IMPORTADO: ${formatDate(inventory.imported_at).toUpperCase()}`;
   const categories = [...new Set(inventory.records.map((r) => r.category_name).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
   const locations = [...new Set(inventory.records.map((r) => r.location_path || r.location_name).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
   setOptions($('category-filter'), categories, (v) => v);
