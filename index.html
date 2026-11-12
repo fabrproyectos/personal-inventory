@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171a1d">
+  <meta name="description" content="Consulta offline del inventario personal.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>INVENTARIO // MÓVIL</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark">PI<span>_</span></div>
+    <div class="brand-copy"><strong>INVENTARIO PERSONAL</strong><small>TERMINAL MÓVIL // SOLO LECTURA</small></div>
+    <span class="status"><i></i> LOCAL</span>
+  </header>
+
+  <main class="shell">
+    <section class="welcome panel">
+      <div class="eyebrow">SISTEMA DE CONSULTA PORTÁTIL</div>
+      <h1>Inventario <span>personal</span></h1>
+      <p class="muted">Base de consulta offline. Los datos se actualizan mediante una exportación desde la computadora.</p>
+      <div class="import-row">
+        <label class="button primary" for="json-file">IMPORTAR ACTUALIZACIÓN</label>
+        <input id="json-file" type="file" accept=".json,application/json" hidden>
+        <span id="import-status" class="small muted">Sin datos importados</span>
+      </div>
+      <div id="import-error" class="notice error" role="alert" hidden></div>
+    </section>
+
+    <section class="metrics" aria-label="Resumen del inventario">
+      <article class="metric panel"><span>REGISTROS</span><strong id="metric-records">—</strong></article>
+      <article class="metric panel"><span>CATEGORÍAS</span><strong id="metric-categories">—</strong></article>
+      <article class="metric panel"><span>UBICACIONES</span><strong id="metric-locations">—</strong></article>
+    </section>
+
+    <section class="panel search-panel">
+      <div class="section-heading"><div><div class="eyebrow">CONSULTA DE EXISTENCIAS</div><h2>Buscar objeto</h2></div><span id="result-count" class="counter">0 RESULTADOS</span></div>
+      <label class="search-box"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Nombre, código, tipo o descripción…" autocomplete="off"></label>
+      <div class="filters">
+        <label>CATEGORÍA<select id="category-filter"><option value="">Todas</option></select></label>
+        <label>UBICACIÓN<select id="location-filter"><option value="">Todas</option></select></label>
+        <label>SEGUIMIENTO<select id="tracking-filter"><option value="">Todos</option><option value="INDIVIDUAL">Individual</option><option value="QUANTITY">Por cantidad</option></select></label>
+      </div>
+      <div class="list-heading"><span>REGISTROS</span><span>SELECCIONÁ PARA VER DETALLES</span></div>
+      <div id="records-list" class="records-list"><div class="empty-state">Importá un archivo JSON exportado desde la computadora.</div></div>
+    </section>
+
+    <section class="bottom-line"><span>PI / MOBILE CLIENT</span><span id="last-updated">DATOS: NO DISPONIBLES</span><span>READ ONLY</span></section>
+  </main>
+
+  <dialog id="detail-dialog" class="detail-dialog">
+    <div class="dialog-head"><div><div class="eyebrow">FICHA DE REGISTRO</div><h2 id="detail-name">Objeto</h2></div><button id="close-dialog" class="icon-button" aria-label="Cerrar">×</button></div>
+    <div id="detail-code" class="detail-code"></div>
+    <div id="detail-grid" class="detail-grid"></div>
+    <div id="detail-description" class="detail-description"></div>
+    <div class="read-only-note">⛨ CONSULTA ÚNICAMENTE — MODIFICACIONES DESHABILITADAS</div>
+  </dialog>
+  <script src="app.js" defer></script>
+</body>
+</html>
