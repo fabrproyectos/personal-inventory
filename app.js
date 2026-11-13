@@ -5,6 +5,7 @@ const DB_VERSION = 1;
 const STORE_NAME = 'snapshot';
 let inventory = null;
 let database = null;
+let currentLocationCode = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -100,6 +101,7 @@ function initializeView() {
   setOptions($('operational-filter'), uniqueSorted(records.map((r) => r.operational_status)), (v) => v, 'Todos');
   setOptions($('availability-filter'), uniqueSorted(records.map((r) => r.availability_status)), (v) => v, 'Todas');
   renderRecords();
+  renderLocationExplorer();
 }
 
 function filteredRecords() {
@@ -155,7 +157,7 @@ function updateFilterSummary() {
 function clearFilters() {
   ['search-input', 'category-filter', 'location-filter', 'type-filter', 'condition-filter', 'operational-filter', 'availability-filter'].forEach((id) => { $(id).value = ''; });
   $('tracking-filter').value = '';
-  $('sort-filter').value = 'name';
+  $('sort-filter').value = 'code';
   renderRecords();
 }
 
@@ -174,21 +176,140 @@ function renderRecords() {
     return;
   }
   records.forEach((record) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'record';
-    button.addEventListener('click', () => showDetails(record));
-    const code = document.createElement('span'); code.className = 'record-code'; code.textContent = record.code;
-    const main = document.createElement('span'); main.className = 'record-main';
-    const name = document.createElement('span'); name.className = 'record-name'; name.textContent = record.name;
-    const sub = document.createElement('span'); sub.className = 'record-sub';
+    const button = makeRecordButton(record);
+    const sub = button.querySelector('.record-sub');
     sub.textContent = `${record.category_name || 'Sin categoría'} · ${record.location_path || record.location_name || 'Sin ubicación'}`;
-    main.append(name, sub);
-    const qty = document.createElement('span'); qty.className = 'record-qty';
-    qty.textContent = record.tracking_mode === 'QUANTITY' ? `${escapeText(record.quantity)} ${escapeText(record.unit)}` : 'INDIVIDUAL';
-    button.append(code, main, qty);
     container.append(button);
   });
+}
+
+function renderLocationExplorer() {
+  const breadcrumb = $('location-breadcrumb');
+  const childrenContainer = $('location-children');
+  const recordsContainer = $('location-records');
+  const currentLabel = $('location-current');
+  breadcrumb.replaceChildren();
+  childrenContainer.replaceChildren();
+  recordsContainer.replaceChildren();
+
+  if (!inventory || !Array.isArray(inventory.locations)) {
+    currentLabel.textContent = 'SIN DATOS DE UBICACIONES';
+    recordsContainer.append(makeEmptyState('Importá un inventario para explorar sus ubicaciones.'));
+    return;
+  }
+
+  const locationsByCode = new Map(inventory.locations.map((location) => [location.code, location]));
+  const compareCode = (a, b) => String(a.code ?? '').localeCompare(String(b.code ?? ''), 'es', { numeric: true, sensitivity: 'base' });
+  const addCrumb = (label, code) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'breadcrumb-button';
+    button.textContent = label;
+    button.addEventListener('click', () => {
+      currentLocationCode = code;
+      renderLocationExplorer();
+    });
+    breadcrumb.append(button);
+  };
+
+  addCrumb('RAÍZ', null);
+  let current = currentLocationCode ? locationsByCode.get(currentLocationCode) : null;
+  if (currentLocationCode && !current) currentLocationCode = null;
+  current = currentLocationCode ? locationsByCode.get(currentLocationCode) : null;
+
+  if (current) {
+    const ancestors = [];
+    const visited = new Set([current.code]);
+    let parentCode = current.parent_code;
+    while (parentCode && locationsByCode.has(parentCode) && !visited.has(parentCode)) {
+      const parent = locationsByCode.get(parentCode);
+      ancestors.unshift(parent);
+      visited.add(parentCode);
+      parentCode = parent.parent_code;
+    }
+    ancestors.forEach((location) => addCrumb(location.name, location.code));
+    addCrumb(current.name, current.code);
+    currentLabel.textContent = `${current.code} // ${current.full_path || current.name}`;
+  } else {
+    currentLabel.textContent = 'UBICACIONES PRINCIPALES';
+  }
+
+  const parentCode = current ? current.code : null;
+  let children = inventory.locations.filter((location) => (location.parent_code || null) === parentCode).sort(compareCode);
+  if (!current && children.length === 0 && inventory.locations.length) {
+    children = [...inventory.locations].sort(compareCode);
+  }
+
+  if (!children.length) {
+    childrenContainer.append(makeEmptyState(current ? 'Esta ubicación no contiene sububicaciones.' : 'No hay ubicaciones registradas.'));
+  } else {
+    children.forEach((location) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'location-entry';
+      const code = document.createElement('span');
+      code.className = 'location-code';
+      code.textContent = location.code;
+      const main = document.createElement('span');
+      main.className = 'location-main';
+      const name = document.createElement('strong');
+      name.textContent = location.name;
+      const path = document.createElement('small');
+      path.textContent = location.full_path || location.name;
+      main.append(name, path);
+      const arrow = document.createElement('span');
+      arrow.className = 'location-arrow';
+      arrow.textContent = '›';
+      button.append(code, main, arrow);
+      button.addEventListener('click', () => {
+        currentLocationCode = location.code;
+        renderLocationExplorer();
+      });
+      childrenContainer.append(button);
+    });
+  }
+
+  const directRecords = current
+    ? inventory.records.filter((record) => record.location_code === current.code).sort(compareCode)
+    : [];
+  if (!current) {
+    recordsContainer.append(makeEmptyState('Seleccioná una ubicación para consultar los objetos almacenados directamente en ella.'));
+  } else if (!directRecords.length) {
+    recordsContainer.append(makeEmptyState('No hay objetos registrados directamente en esta ubicación. Revisá sus sububicaciones.'));
+  } else {
+    directRecords.forEach((record) => recordsContainer.append(makeRecordButton(record)));
+  }
+}
+
+function makeEmptyState(message) {
+  const empty = document.createElement('div');
+  empty.className = 'empty-state';
+  empty.textContent = message;
+  return empty;
+}
+
+function makeRecordButton(record) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'record';
+  button.addEventListener('click', () => showDetails(record));
+  const code = document.createElement('span');
+  code.className = 'record-code';
+  code.textContent = record.code;
+  const main = document.createElement('span');
+  main.className = 'record-main';
+  const name = document.createElement('span');
+  name.className = 'record-name';
+  name.textContent = record.name;
+  const sub = document.createElement('span');
+  sub.className = 'record-sub';
+  sub.textContent = `${record.category_name || 'Sin categoría'} · ${record.item_type_name || 'Sin tipo'}`;
+  main.append(name, sub);
+  const qty = document.createElement('span');
+  qty.className = 'record-qty';
+  qty.textContent = record.tracking_mode === 'QUANTITY' ? `${escapeText(record.quantity)} ${escapeText(record.unit)}` : 'INDIVIDUAL';
+  button.append(code, main, qty);
+  return button;
 }
 
 function showDetails(record) {

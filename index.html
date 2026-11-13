@@ -42,6 +42,19 @@
       <article class="metric panel"><span>UBICACIONES</span><strong id="metric-locations">—</strong></article>
     </section>
 
+    <section class="panel location-panel">
+      <div class="section-heading">
+        <div><div class="eyebrow">EXPLORACIÓN FÍSICA</div><h2>Ubicaciones</h2></div>
+        <span class="counter">NAVEGACIÓN JERÁRQUICA</span>
+      </div>
+      <p class="muted location-help">Recorré las ubicaciones desde los espacios principales hasta sus sububicaciones. Se muestran los objetos guardados directamente en cada lugar.</p>
+      <nav id="location-breadcrumb" class="location-breadcrumb" aria-label="Ruta de ubicaciones"></nav>
+      <div id="location-current" class="location-current">SELECCIONÁ UNA UBICACIÓN</div>
+      <div id="location-children" class="location-list"></div>
+      <div class="location-record-heading">OBJETOS EN ESTA UBICACIÓN</div>
+      <div id="location-records" class="records-list"><div class="empty-state">Importá un inventario para explorar sus ubicaciones.</div></div>
+    </section>
+
     <section class="panel search-panel">
       <div class="section-heading"><div><div class="eyebrow">CONSULTA DE EXISTENCIAS</div><h2>Buscar objeto</h2></div><span id="result-count" class="counter">0 RESULTADOS</span></div>
       <label class="search-box"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Nombre, código, tipo o descripción…" autocomplete="off"></label>
@@ -57,7 +70,7 @@
           <label>CONDICIÓN FÍSICA<select id="condition-filter"><option value="">Todas</option></select></label>
           <label>ESTADO OPERATIVO<select id="operational-filter"><option value="">Todos</option></select></label>
           <label>DISPONIBILIDAD<select id="availability-filter"><option value="">Todas</option></select></label>
-          <label>ORDENAR POR<select id="sort-filter"><option value="name">Nombre (A–Z)</option><option value="code">Código</option><option value="category">Categoría</option><option value="location">Ubicación</option><option value="quantity_desc">Cantidad (mayor a menor)</option></select></label>
+          <label>ORDENAR POR<select id="sort-filter"><option value="code">Código (ascendente)</option><option value="name">Nombre (A–Z)</option><option value="category">Categoría</option><option value="location">Ubicación</option><option value="quantity_desc">Cantidad (mayor a menor)</option></select></label>
         </div>
         <button id="clear-filters" class="button secondary" type="button">LIMPIAR FILTROS</button>
       </details>
