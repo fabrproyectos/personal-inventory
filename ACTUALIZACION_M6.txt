@@ -1,0 +1,46 @@
+PERSONAL INVENTORY — ACTUALIZACIÓN M6
+=====================================
+
+Objetivo
+--------
+Corregir la actualización de la PWA instalada en Android. La versión anterior
+(v5) utilizaba una estrategia cache-first para todos los archivos. Eso podía
+mantener un app.js antiguo y provocar que la PWA rechazara un JSON v2 válido.
+
+Cambios incluidos
+-----------------
+- Nueva caché: personal-inventory-mobile-v6.
+- El Service Worker nuevo se activa inmediatamente.
+- Se eliminan solamente cachés antiguas cuyo nombre empieza con
+  'personal-inventory-mobile-'.
+- index.html, app.js, styles.css y manifest.webmanifest usan estrategia
+  network-first: con conexión se obtiene la versión publicada; sin conexión
+  se utiliza la copia almacenada.
+- Los demás recursos mantienen cache-first.
+- No se borra IndexedDB ni el inventario importado en el teléfono.
+- No se modifica el formato JSON v2 ni la aplicación de escritorio.
+
+PUBLICAR EN GITHUB PAGES
+------------------------
+1. Descomprimir personal_inventory_GitHub_Pages_M6.zip.
+2. Entrar en la carpeta site_publish.
+3. Subir TODO su contenido a la raíz del repositorio personal-inventory,
+   reemplazando los archivos existentes.
+4. Confirmar los cambios y esperar a que GitHub Pages publique el sitio.
+5. En Android, abrir la PWA instalada con Internet habilitado.
+6. Esperar unos segundos, cerrar la PWA y volver a abrirla.
+7. No borrar almacenamiento, no desinstalar la PWA y no importar el JSON
+   nuevamente solo por esta actualización.
+
+DESPUÉS DE ACTUALIZAR
+---------------------
+Volver a intentar importar el archivo personal_inventory_mobile.json v2.
+La actualización del código no actualiza los datos del inventario: para eso
+se debe exportar un JSON nuevo desde la aplicación de escritorio e importarlo
+en Android.
+
+PROYECTO DE ESCRITORIO
+----------------------
+El ZIP de PC se basa en la versión 1.1.0 validada. No reemplaza la base de datos
+personal del usuario. Antes de usarlo, conservar una copia de seguridad de
+data/inventory.db.
