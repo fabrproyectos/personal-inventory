@@ -1,0 +1,11 @@
+PERSONAL INVENTORY PWA — PUBLICACIÓN V1.0.0
+
+1. Subir TODO el contenido de esta carpeta a la raíz del repositorio personal-inventory.
+2. Reemplazar los archivos anteriores.
+3. Confirmar el commit en la rama main.
+4. Esperar a que GitHub Pages complete el despliegue.
+5. Abrir la aplicación instalada en Android con Internet. Esperar unos segundos y volver a abrirla.
+
+La caché de la aplicación se actualizó a personal-inventory-mobile-v5. La actualización conserva IndexedDB: no es necesario volver a importar el JSON.
+
+NO subir archivos JSON de inventario, la base SQLite ni credenciales. El repositorio contiene únicamente el código público de la PWA.
