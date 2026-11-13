@@ -1,11 +1,15 @@
-PERSONAL INVENTORY PWA — PUBLICACIÓN V1.0.0
+PERSONAL INVENTORY MOBILE — ACTUALIZACIÓN 1.1.0
 
-1. Subir TODO el contenido de esta carpeta a la raíz del repositorio personal-inventory.
-2. Reemplazar los archivos anteriores.
-3. Confirmar el commit en la rama main.
-4. Esperar a que GitHub Pages complete el despliegue.
-5. Abrir la aplicación instalada en Android con Internet. Esperar unos segundos y volver a abrirla.
+1. Descomprimir este paquete.
+2. Abrir la carpeta site_publish (en el ZIP de proyecto completo) o el contenido del ZIP de GitHub Pages.
+3. Subir TODO el contenido a la raíz del repositorio personal-inventory en GitHub.
+4. Reemplazar los archivos anteriores y confirmar los cambios.
+5. Esperar a que GitHub Pages publique la actualización.
+6. Abrir la PWA instalada en Android con conexión a Internet y esperar unos segundos.
+7. En la PC, abrir Personal Inventory 1.1.0 y exportar un JSON nuevo desde Sistema y mantenimiento.
+8. Transferir ese JSON al teléfono e importarlo desde la PWA.
 
-La caché de la aplicación se actualizó a personal-inventory-mobile-v5. La actualización conserva IndexedDB: no es necesario volver a importar el JSON.
-
-NO subir archivos JSON de inventario, la base SQLite ni credenciales. El repositorio contiene únicamente el código público de la PWA.
+El formato JSON ahora usa schema_version 2 para representar contenedores anidados.
+La publicación de archivos no elimina el snapshot guardado en IndexedDB.
+La importación del JSON nuevo reemplaza el snapshot anterior del teléfono.
+La aplicación móvil sigue siendo de solo lectura.
